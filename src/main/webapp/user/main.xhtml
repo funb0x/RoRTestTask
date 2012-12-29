@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich">
+
+<h:head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" type="text/css"
+		href="${facesContext.externalContext.requestContextPath}/css/style.css" />
+	<title><ui:insert name="title">ROR Test Task</ui:insert></title>
+</h:head>
+<h:body>
+	<br />
+	<h:form>
+		<h:outputText value="Logged as: #{userMain.loggedUser}  " />
+		<a4j:commandButton value="Logout" action="#{userMain.logout}"
+			type="button" />
+	</h:form>
+	<div style="text-align: center;">
+		<a4j:commandButton value="Add project" id="newProject"
+			onclick="#{rich:component('newProjectDialog')}.show();" type="button" />
+	</div>
+	<br />
+	<rich:popupPanel id="newProjectDialog" autosized="true"
+		header="Create new project">
+		<h:form id="newProjectForm">
+			<h:panelGrid columns="3">
+				<h:outputText value="Project name:" />
+				<h:inputText id="newProjectName"
+					value="#{userMain.newProject.projectName}" required="true"
+					requiredMessage="Name is required"
+					validatorMessage="Input value must be less than 20 symbols">
+					<f:validateLength minimum="1" maximum="20" />
+				</h:inputText>
+				<rich:message for="newProjectName" />
+				<h:outputText value="Project description:" />
+				<h:inputText id="newProjectDescription"
+					value="#{userMain.newProject.projectDescription}" required="true"
+					requiredMessage="Description is required"
+					validatorMessage="Input value must be less than 40 symbols">
+					<f:validateLength minimum="1" maximum="40" />
+				</h:inputText>
+				<rich:message for="newProjectDescription" />
+			</h:panelGrid>
+			<a4j:commandButton value="Submit" execute="newProjectDialog"
+				oncomplete="if (#{facesContext.maximumSeverity==null}) {#{rich:component('newProjectDialog')}.hide();}"
+				render="projects" action="#{userMain.addNewProject}" />
+			<a4j:commandButton value="Cancel"
+				onclick="#{rich:component('newProjectDialog')}.hide(); return false;" />
+		</h:form>
+	</rich:popupPanel>
+	<h:form id="projectForm">
+		<rich:extendedDataTable id="projects" var="project"
+			value="#{userMain.projects}" selectionMode="single"
+			selection="#{userMain.selection}"
+			style="margin: 0 auto; width:470px;" frozenColumns="3">
+			<a4j:ajax execute="@this" event="selectionchange"
+				listener="#{userMain.onRowSelect}" render="tasks" />
+			<rich:column width="150px">
+				<f:facet name="header">Name</f:facet>
+				<h:outputText value="#{project.projectName}" />
+			</rich:column>
+			<rich:column width="150px">
+				<f:facet name="header">Description</f:facet>
+				<h:outputText value="#{project.projectDescription}" />
+			</rich:column>
+			<rich:column width="170px">
+				<f:facet name="header">Options</f:facet>
+				<a4j:region>
+					<a4j:commandButton value="delete" action="#{userMain.initProject}"
+						execute="@this"
+						oncomplete="#{rich:component('deleteProjectDialog')}.show()">
+					</a4j:commandButton>
+				</a4j:region>
+				<a4j:region>
+					<a4j:commandButton value="edit" action="#{userMain.initProject}"
+						execute="@this" render="editProjectTable"
+						oncomplete="#{rich:component('editProjectDialog')}.show()">
+					</a4j:commandButton>
+				</a4j:region>
+				<a4j:region>
+					<a4j:commandButton value="new task"
+						action="#{userMain.initProject}" execute="@this" render=""
+						oncomplete="#{rich:component('addTaskDialog')}.show()">
+					</a4j:commandButton>
+				</a4j:region>
+			</rich:column>
+		</rich:extendedDataTable>
+	</h:form>
+	<rich:popupPanel id="deleteProjectDialog" autosized="true"
+		header="Delete project">
+		<h:outputText value="Are you sure you want to delete project?" />
+		<a4j:commandButton value="Delete project"
+			action="#{userMain.deleteProject}" render="projects tasks"
+			execute="@this"
+			oncomplete="#{rich:component('deleteProjectDialog')}.hide(); return false;" />
+		<a4j:commandButton value="Cancel"
+			onclick="#{rich:component('deleteProjectDialog')}.hide(); return false;" />
+	</rich:popupPanel>
+	<rich:popupPanel id="editProjectDialog" header="Edit project"
+		domElementAttachment="parent" autosized="true">
+		<h:form>
+			<h:panelGrid columns="3" id="editProjectTable">
+				<h:outputText value="Project name:" />
+				<h:inputText id="editProjectName"
+					value="#{userMain.tempProject.projectName}" required="true"
+					requiredMessage="Name is required"
+					validatorMessage="Input value must be less than 20 symbols">
+					<f:validateLength minimum="1" maximum="20" />
+				</h:inputText>
+				<rich:message for="editProjectName" />
+				<h:outputText value="Project description:" />
+				<h:inputText id="editProjectDescription"
+					value="#{userMain.tempProject.projectDescription}" required="true"
+					requiredMessage="Description is required"
+					validatorMessage="Input value must be less than 40 symbols">
+					<f:validateLength minimum="1" maximum="40" />
+				</h:inputText>
+				<rich:message for="editProjectDescription" />
+			</h:panelGrid>
+			<a4j:commandButton value="Submit"
+				oncomplete="if (#{facesContext.maximumSeverity==null}) {#{rich:component('editProjectDialog')}.hide();}"
+				render="projects" action="#{userMain.editProject}" />
+			<a4j:commandButton value="Cancel"
+				onclick="#{rich:component('editProjectDialog')}.hide(); return false;" />
+		</h:form>
+	</rich:popupPanel>
+	<rich:popupPanel id="addTaskDialog" header="New task" autosized="true">
+		<h:form id="newTaskForm">
+			<h:panelGrid columns="3">
+				<h:outputText value="Task name:" />
+				<h:inputText id="newTaskName" value="#{userMain.newTask.taskName}"
+					required="true" requiredMessage="Name is required"
+					validatorMessage="Input value must be less than 20 symbols">
+					<f:validateLength minimum="1" maximum="20" />
+				</h:inputText>
+				<rich:message id="newTaskNameErr" for="newTaskName" />
+				<h:outputText value="Task description:" />
+				<h:inputText id="newTaskDescription"
+					value="#{userMain.newTask.taskDescription}" required="true"
+					requiredMessage="Description is required"
+					validatorMessage="Input value must be less than 40 symbols">
+					<f:validateLength minimum="1" maximum="40" />
+				</h:inputText>
+				<rich:message id="newTaskDescriptionErr" for="newTaskDescription" />
+				<h:outputText value="Task deadline:" />
+				<rich:calendar id="newTaskDeadline"
+					value="#{userMain.newTask.taskDeadline}" locale="en/US"
+					popup="true" datePattern="d/M/yy HH:mm" showApplyButton="false"
+					cellWidth="24px" cellHeight="22px" style="width:200px"
+					required="true" requiredMessage="Deadline is required" />
+				<rich:message id="newTaskDeadlineErr" for="newTaskDeadline" />
+				<h:outputText value="Task priority:" />
+				<h:selectOneMenu id="newTaskPriority"
+					value="#{userMain.newTask.taskPriority}" required="true"
+					requiredMessage="Priority is required">
+					<f:selectItem itemLabel="1" itemValue="1" />
+					<f:selectItem itemLabel="2" itemValue="2" />
+					<f:selectItem itemLabel="3" itemValue="3" />
+					<f:selectItem itemLabel="4" itemValue="4" />
+					<f:selectItem itemLabel="5" itemValue="5" />
+					<f:selectItem itemLabel="6" itemValue="6" />
+					<f:selectItem itemLabel="7" itemValue="7" />
+					<f:selectItem itemLabel="8" itemValue="8" />
+					<f:selectItem itemLabel="9" itemValue="9" />
+				</h:selectOneMenu>
+				<rich:message for="newTaskPriority" />
+			</h:panelGrid>
+			<a4j:commandButton value="Submit"
+				oncomplete="if (#{facesContext.maximumSeverity==null}) {#{rich:component('addTaskDialog')}.hide();}"
+				render="tasks" action="#{userMain.addNewTask}" />
+			<a4j:commandButton value="Cancel"
+				onclick="#{rich:component('addTaskDialog')}.hide(); return false;" />
+		</h:form>
+	</rich:popupPanel>
+	<br />
+	<h:form>
+		<rich:dataTable id="tasks" var="task" value="#{userMain.tasks}"
+			styleClass="center">
+			<rich:column>
+				<f:facet name="header">Name</f:facet>
+				<h:outputText value="#{task.taskName}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">Description</f:facet>
+				<h:outputText value="#{task.taskDescription}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">Status</f:facet>
+				<h:outputText value="#{task.status}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">Deadline</f:facet>
+				<h:outputText value="#{task.taskDeadline}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">Priority</f:facet>
+				<h:outputText value="#{task.taskPriority}" />
+			</rich:column>
+			<rich:column>
+				<f:facet name="header">Options</f:facet>
+				<a4j:region>
+					<a4j:commandButton value="delete" action="#{userMain.initTask}"
+						execute="@this"
+						oncomplete="#{rich:component('deleteTaskDialog')}.show()">
+					</a4j:commandButton>
+				</a4j:region>
+				<a4j:region>
+					<a4j:commandButton value="edit" action="#{userMain.initTask}"
+						execute="@this" render="editTaskTable"
+						oncomplete="#{rich:component('editTaskDialog')}.show()">
+					</a4j:commandButton>
+				</a4j:region>
+			</rich:column>
+		</rich:dataTable>
+	</h:form>
+	<rich:popupPanel id="deleteTaskDialog" autosized="true"
+		header="Delete task">
+		<h:outputText value="Are you sure you want to delete task?" />
+		<a4j:commandButton value="Delete task" action="#{userMain.deleteTask}"
+			render="tasks" execute="@this"
+			oncomplete="#{rich:component('deleteTaskDialog')}.hide(); return false;" />
+		<a4j:commandButton value="Cancel"
+			onclick="#{rich:component('deleteTaskDialog')}.hide(); return false;" />
+	</rich:popupPanel>
+	<rich:popupPanel id="editTaskDialog" header="Edit task"
+		domElementAttachment="parent" autosized="true">
+		<h:form>
+			<h:panelGrid columns="3" id="editTaskTable">
+				<h:outputText value="Task name:" />
+				<h:inputText id="editTaskName" value="#{userMain.tempTask.taskName}"
+					required="true" requiredMessage="Name is required"
+					validatorMessage="Input value must be less than 20 symbols">
+					<f:validateLength minimum="1" maximum="20" />
+				</h:inputText>
+				<rich:message for="editTaskName" />
+				<h:outputText value="Task description:" />
+				<h:inputText id="editTaskDescription"
+					value="#{userMain.tempTask.taskDescription}" required="true"
+					requiredMessage="Description is required"
+					validatorMessage="Input value must be less than 40 symbols">
+					<f:validateLength minimum="1" maximum="40" />
+				</h:inputText>
+				<rich:message for="editTaskDescription" />
+				<h:outputText value="Task status:" required="true" />
+				<rich:select id="editTaskStatus" value="#{userMain.tempTask.status}"
+					converter="#{statusConverter}" required="true"
+					requiredMessage="Status is required">
+					<f:selectItems value="#{userMain.statuses}" />
+				</rich:select>
+				<rich:message for="editTaskStatus" />
+				<h:outputText value="Task deadline:" />
+				<rich:calendar id="editTaskDeadLine"
+					value="#{userMain.tempTask.taskDeadline}" locale="en/US"
+					popup="true" datePattern="d/M/yy HH:mm" showApplyButton="false"
+					cellWidth="24px" cellHeight="22px" style="width:200px"
+					required="true" requiredMessage="Deadline is required" />
+				<rich:message for="editTaskDeadLine" />
+				<h:outputText value="Task priority:" />
+				<h:selectOneMenu id="editTaskPriority"
+					value="#{userMain.tempTask.taskPriority}" required="true"
+					requiredMessage="Priority is required">
+					<f:selectItem itemLabel="1" itemValue="1" />
+					<f:selectItem itemLabel="2" itemValue="2" />
+					<f:selectItem itemLabel="3" itemValue="3" />
+					<f:selectItem itemLabel="4" itemValue="4" />
+					<f:selectItem itemLabel="5" itemValue="5" />
+					<f:selectItem itemLabel="6" itemValue="6" />
+					<f:selectItem itemLabel="7" itemValue="7" />
+					<f:selectItem itemLabel="8" itemValue="8" />
+					<f:selectItem itemLabel="9" itemValue="9" />
+				</h:selectOneMenu>
+				<rich:message for="editTaskPriority" />
+			</h:panelGrid>
+			<a4j:commandButton value="Submit"
+				oncomplete="if (#{facesContext.maximumSeverity==null}) {#{rich:component('editTaskDialog')}.hide();}"
+				render="tasks" action="#{userMain.editTask}" />
+			<a4j:commandButton value="Cancel"
+				onclick="#{rich:component('editTaskDialog')}.hide(); return false;" />
+		</h:form>
+	</rich:popupPanel>
+	<script>
+		$(document).ready(function(){
+			$('#newProject').on('click', function(){$('#newProjectForm').find('table').find('input').val('');});
+			//$('input[value="new task"]').on('click', function(){$('#newTaskForm').find('table').find('input').slice(0,3).val(''); alert('no');});		
+			//$('#projectForm').find('input').on('click', function(){$('#newTaskForm').find('table').find('input').slice(0,3).val(''); alert('no');});		
+			$('#newTaskForm').children('input').on('click', function(){$('#newTaskForm').find('table').find('input').slice(0,3).val('');});		
+		//	var haserrormsg;  
+		//	$('#newTaskForm').children('input').on('click', function(){alert($('#newTaskNameErr').hasClass('rf-msg '))           });
+		});	
+	</script>
+</h:body>
+</html>

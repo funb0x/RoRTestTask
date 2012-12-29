@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:a4j="http://richfaces.org/a4j">
+<h:head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" type="text/css"
+		href="${facesContext.externalContext.requestContextPath}/css/style.css" />
+	<title>Welcome to RoR Test Task</title>
+</h:head>
+<h:body>
+	<br />
+	<h:link value="register" outcome="register"></h:link>
+	<br />
+	<c:set var="message" value="#{loginBean.message}" />
+	<c:if test="${message != null}">
+		<div style="text-align: center;">
+			<h:outputText value="#{loginBean.message}" style="margin: 0 auto;" />
+		</div>
+	</c:if>
+	<br />
+	<form method="post" action="j_security_check">
+		<f:facet name="header">
+			<h:outputText value="Enter your details" />
+		</f:facet>
+		<h:panelGrid columns="2" style="margin: 0 auto;">
+			<h:outputText value="Enter login: " />
+			<input type="text" name="j_username" />
+			<h:outputText value="Enter password: " />
+			<input type="password" name="j_password" />
+		</h:panelGrid>
+		<div style="text-align: center;">
+			<input type="submit" value="Login" />
+		</div>
+	</form>
+</h:body>
+</html>
